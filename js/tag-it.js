@@ -222,53 +222,59 @@
 
             // Events.
             this.tagInput
-                .keypress(function(event) {
-                    if (
-                        (event.charCode == '44') ||
-                        event.which === $.ui.keyCode.ENTER ||
+            .keydown(function(event) {
+                // Backspace is not detected within a keypress, so it must use keydown.
+                if (event.which == $.ui.keyCode.BACKSPACE && that._tagInput.val() === '') {
+                    var tag = that._lastTag();
+                    if (!that.options.removeConfirmation || tag.hasClass('remove')) {
+                        // When backspace is pressed, the last tag is deleted.
+                        that.removeTag(tag);
+                    } else if (that.options.removeConfirmation) {
+                        tag.addClass('remove ui-state-highlight');
+                    }
+                } else if (that.options.removeConfirmation) {
+                    that._lastTag().removeClass('remove ui-state-highlight');
+                }
+
+                // Space/Enter are valid delimiters for new tags,
+                // except when there is an open quote or if setting allowSpaces = true.
+                // Tab will also create a tag, unless the tag input is empty, in which case it isn't caught.
+                if (
+                    event.which == $.ui.keyCode.ENTER ||
+                    (
+                        event.which == $.ui.keyCode.TAB &&
+                        that._tagInput.val() !== ''
+                    ) ||
+                    (
+                        event.which == $.ui.keyCode.SPACE &&
+                        that.options.allowSpaces !== true &&
                         (
-                            event.which == $.ui.keyCode.TAB &&
-                            that.tagInput.val() !== ''
-                        ) ||
-                        (
-                            event.which == $.ui.keyCode.SPACE &&
-                            that.options.allowSpaces !== true &&
+                            $.trim(that._tagInput.val()).replace( /^s*/, '' ).charAt(0) != '"' ||
                             (
-                                $.trim(that.tagInput.val()).replace( /^s*/, '' ).charAt(0) != '"' ||
-                                (
-                                    $.trim(that.tagInput.val()).charAt(0) == '"' &&
-                                    $.trim(that.tagInput.val()).charAt($.trim(that.tagInput.val()).length - 1) == '"' &&
-                                    $.trim(that.tagInput.val()).length - 1 !== 0
-                                )
+                                $.trim(that._tagInput.val()).charAt(0) == '"' &&
+                                $.trim(that._tagInput.val()).charAt($.trim(that._tagInput.val()).length - 1) == '"' &&
+                                $.trim(that._tagInput.val()).length - 1 !== 0
                             )
                         )
-                    ) {
-                        if (!(event.which === $.ui.keyCode.ENTER && that.tagInput.val() === '')) {
-                            event.preventDefault();
-                        }
+                    )
+                ) {
+                    event.preventDefault();
+                    that.createTag(that._cleanedInput());
 
-                        if (!(that.options.autocomplete.autoFocus && that.tagInput.data('autocomplete-open'))) {
-                            that.tagInput.autocomplete('close');
-                            that.createTag(that._cleanedInput());
-                        }
-                    }
-                }).keydown(function(e){
-                    if (event.which == $.ui.keyCode.BACKSPACE && that.tagInput.val() === '') {
-                        var tag = that._lastTag();
-                        if (!that.options.removeConfirmation || tag.hasClass('remove')) {
-                            // When backspace is pressed, the last tag is deleted.
-                            that.removeTag(tag);
-                        } else if (that.options.removeConfirmation) {
-                            tag.addClass('remove ui-state-highlight');
-                        }
-                    } else if (that.options.removeConfirmation) {
-                        that._lastTag().removeClass('remove ui-state-highlight');
-                    }
-                }).blur(function(e){
-                    if (!that.tagInput.data('autocomplete-open')) {
-                        that.createTag(that._cleanedInput());
-                    }
-                });
+                    // The autocomplete doesn't close automatically when TAB is pressed.
+                    // So let's ensure that it closes.
+                    that._tagInput.autocomplete('close');
+                }
+            }).keypress(function(event){
+                // Comma character (has to be checked on keypress, because charCode is 0 in keydown event)
+                if (event.charCode == 44) {
+                    event.preventDefault();
+                    that.createTag(that._cleanedInput());
+                }
+            }).blur(function(e){
+                // Create a tag when the element loses focus (unless it's empty).
+                that.createTag(that._cleanedInput());
+            });
 
             // Autocomplete.
             if (this.options.availableTags || this.options.tagSource || this.options.autocomplete.source) {
