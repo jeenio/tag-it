@@ -224,7 +224,7 @@
             this.tagInput
             .keydown(function(event) {
                 // Backspace is not detected within a keypress, so it must use keydown.
-                if (event.which == $.ui.keyCode.BACKSPACE && that._tagInput.val() === '') {
+                if (event.which == $.ui.keyCode.BACKSPACE && that.tagInput.val() === '') {
                     var tag = that._lastTag();
                     if (!that.options.removeConfirmation || tag.hasClass('remove')) {
                         // When backspace is pressed, the last tag is deleted.
@@ -243,17 +243,17 @@
                     event.which == $.ui.keyCode.ENTER ||
                     (
                         event.which == $.ui.keyCode.TAB &&
-                        that._tagInput.val() !== ''
+                        that.tagInput.val() !== ''
                     ) ||
                     (
                         event.which == $.ui.keyCode.SPACE &&
                         that.options.allowSpaces !== true &&
                         (
-                            $.trim(that._tagInput.val()).replace( /^s*/, '' ).charAt(0) != '"' ||
+                            $.trim(that.tagInput.val()).replace( /^s*/, '' ).charAt(0) != '"' ||
                             (
-                                $.trim(that._tagInput.val()).charAt(0) == '"' &&
-                                $.trim(that._tagInput.val()).charAt($.trim(that._tagInput.val()).length - 1) == '"' &&
-                                $.trim(that._tagInput.val()).length - 1 !== 0
+                                $.trim(that.tagInput.val()).charAt(0) == '"' &&
+                                $.trim(that.tagInput.val()).charAt($.trim(that.tagInput.val()).length - 1) == '"' &&
+                                $.trim(that.tagInput.val()).length - 1 !== 0
                             )
                         )
                     )
@@ -263,7 +263,7 @@
 
                     // The autocomplete doesn't close automatically when TAB is pressed.
                     // So let's ensure that it closes.
-                    that._tagInput.autocomplete('close');
+                    that.tagInput.autocomplete('close');
                 }
             }).keypress(function(event){
                 // Comma character (has to be checked on keypress, because charCode is 0 in keydown event)
